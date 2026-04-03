@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: redis-lab3-order_service:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        # Liveness Probe — проверяет, жив ли контейнер
+        livenessProbe:
+          tcpSocket:
+            port: 5000               # порт приложения
+          initialDelaySeconds: 30    # первая проверка через 30 секунд
+          periodSeconds: 10          # проверка каждые 10 секунд
+          timeoutSeconds: 3          # таймаут 3 секунды
+          failureThreshold: 3        # после 3 неудач — перезапуск
+        # Readiness Probe — проверяет, готов ли контейнер принимать трафик
+        readinessProbe:
+          tcpSocket:
+            port: 5000               # порт приложения
+          initialDelaySeconds: 10    # первая проверка через 10 секунд
+          periodSeconds: 5           # проверка каждые 5 секунд
+          timeoutSeconds: 3          # таймаут 3 секунды
+          successThreshold: 1        # 1 успех = готов
+          failureThreshold: 3        # после 3 неудач — исключить из маршрутизации
+          
+          
